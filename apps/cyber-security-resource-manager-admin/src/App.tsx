@@ -3,6 +3,7 @@ import { Admin, DataProvider, Resource } from "react-admin";
 import buildGraphQLProvider from "./data-provider/graphqlDataProvider";
 import { theme } from "./theme/theme";
 import Login from "./Login";
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import "./App.scss";
 import Dashboard from "./pages/Dashboard";
 import { EmployeeList } from "./employee/EmployeeList";
@@ -27,68 +28,85 @@ import { UserEdit } from "./user/UserEdit";
 import { UserShow } from "./user/UserShow";
 import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
-const App = (): React.ReactElement => {
-  const [dataProvider, setDataProvider] = useState<DataProvider | null>(null);
-  useEffect(() => {
-    buildGraphQLProvider
-      .then((provider: any) => {
-        setDataProvider(() => provider);
-      })
-      .catch((error: any) => {
-        console.log(error);
-      });
-  }, []);
-  if (!dataProvider) {
-    return <div>Loading</div>;
-  }
+
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <Admin
-        title={"CyberSecurityResourceManager"}
-        dataProvider={dataProvider}
-        authProvider={jwtAuthProvider}
-        theme={theme}
-        dashboard={Dashboard}
-        loginPage={Login}
-      >
-        <Resource
-          name="Employee"
-          list={EmployeeList}
-          edit={EmployeeEdit}
-          create={EmployeeCreate}
-          show={EmployeeShow}
-        />
-        <Resource
-          name="Project"
-          list={ProjectList}
-          edit={ProjectEdit}
-          create={ProjectCreate}
-          show={ProjectShow}
-        />
-        <Resource
-          name="Assignment"
-          list={AssignmentList}
-          edit={AssignmentEdit}
-          create={AssignmentCreate}
-          show={AssignmentShow}
-        />
-        <Resource
-          name="File"
-          list={FileList}
-          edit={FileEdit}
-          create={FileCreate}
-          show={FileShow}
-        />
-        <Resource
-          name="User"
-          list={UserList}
-          edit={UserEdit}
-          create={UserCreate}
-          show={UserShow}
-        />
-      </Admin>
-    </div>
+    <Router>
+      <Switch>
+        {/* Route to login page */}
+        <Route path="/login" exact component={LoginPage} />
+        {/* Redirect all other routes to login */}
+        <Redirect to="/login" />
+      </Switch>
+    </Router>
   );
-};
+}
 
 export default App;
+
+
+//const App = (): React.ReactElement => {
+  //const [dataProvider, setDataProvider] = useState<DataProvider | null>(null);
+  //useEffect(() => {
+    //buildGraphQLProvider
+    //  .then((provider: any) => {
+    //    setDataProvider(() => provider);
+    //  })
+    //  .catch((error: any) => {
+    //    console.log(error);
+   //   });
+  //}, []);
+  //if (!dataProvider) {
+   // return <div>Loading</div>;
+  //}
+ // return (
+  //  <div className="App">
+  //    <Admin
+  //      title={"CyberSecurityResourceManager"}
+  //      dataProvider={dataProvider}
+//        authProvider={jwtAuthProvider}
+  //      theme={theme}
+  //      dashboard={Dashboard}
+  //      loginPage={Login}
+  //    >
+  //      <Resource
+  //        name="Employee"
+//          list={EmployeeList}
+//          edit={EmployeeEdit}
+//          create={EmployeeCreate}
+ //         show={EmployeeShow}
+ //       />
+ //       <Resource
+ //         name="Project"
+ //         list={ProjectList}
+ //         edit={ProjectEdit}
+ //         create={ProjectCreate}
+ //         show={ProjectShow}
+ //       />
+ //       <Resource
+ //         name="Assignment"
+ //         list={AssignmentList}
+ //         edit={AssignmentEdit}
+ //         create={AssignmentCreate}
+ //         show={AssignmentShow}
+//        />
+//        <Resource
+//          name="File"
+//          list={FileList}
+//          edit={FileEdit}
+//          create={FileCreate}
+//          show={FileShow}
+//        />
+//        <Resource
+//          name="User"
+//          list={UserList}
+//          edit={UserEdit}
+ //         create={UserCreate}
+//          show={UserShow}
+//        />
+//      </Admin>
+//    </div>
+ // );
+//};
+
+//export default App;
