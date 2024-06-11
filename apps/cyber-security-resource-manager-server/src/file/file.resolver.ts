@@ -1,11 +1,18 @@
-import * as graphql from "@nestjs/graphql";
-import { FileResolverBase } from "./base/file.resolver.base";
-import { File } from "./base/File";
+import { Resolver, UseGuards } from "@nestjs/graphql";
+import { RolesBuilder } from "nest-access-control";
 import { FileService } from "./file.service";
+import { FileResolverBase } from "./base/file.resolver.base";
+import { GqlACGuard } from "../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../auth/gqlDefaultAuth.guard";
+import { File } from "./base/File";
 
-@graphql.Resolver(() => File)
+@Resolver(() => File)
+@UseGuards(GqlDefaultAuthGuard, GqlACGuard)
 export class FileResolver extends FileResolverBase {
-  constructor(protected readonly service: FileService) {
-    super(service);
+  constructor(
+    protected readonly service: FileService,
+    protected readonly rolesBuilder: RolesBuilder
+  ) {
+    super(service, rolesBuilder);
   }
 }
