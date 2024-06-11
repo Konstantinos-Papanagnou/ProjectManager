@@ -1,4 +1,4 @@
-import { Resolver, UseGuards } from "@nestjs/graphql";
+import { Resolver, UseGuards } from "@nestjs/common";
 import { RolesBuilder } from "nest-access-control";
 import { AssignmentService } from "./assignment.service";
 import { AssignmentResolverBase } from "./base/assignment.resolver.base";
