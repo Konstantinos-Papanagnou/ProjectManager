@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { EmployeeService } from "../employee.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { EmployeeCreateInput } from "./EmployeeCreateInput";
 import { Employee } from "./Employee";
 import { EmployeeFindManyArgs } from "./EmployeeFindManyArgs";
@@ -26,10 +30,24 @@ import { AssignmentFindManyArgs } from "../../assignment/base/AssignmentFindMany
 import { Assignment } from "../../assignment/base/Assignment";
 import { AssignmentWhereUniqueInput } from "../../assignment/base/AssignmentWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class EmployeeControllerBase {
-  constructor(protected readonly service: EmployeeService) {}
+  constructor(
+    protected readonly service: EmployeeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Employee })
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createEmployee(
     @common.Body() data: EmployeeCreateInput
   ): Promise<Employee> {
@@ -48,9 +66,18 @@ export class EmployeeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Employee] })
   @ApiNestedQuery(EmployeeFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async employees(@common.Req() request: Request): Promise<Employee[]> {
     const args = plainToClass(EmployeeFindManyArgs, request.query);
     return this.service.employees({
@@ -68,9 +95,18 @@ export class EmployeeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Employee })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async employee(
     @common.Param() params: EmployeeWhereUniqueInput
   ): Promise<Employee | null> {
@@ -95,9 +131,18 @@ export class EmployeeControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Employee })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateEmployee(
     @common.Param() params: EmployeeWhereUniqueInput,
     @common.Body() data: EmployeeUpdateInput
@@ -130,6 +175,14 @@ export class EmployeeControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Employee })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteEmployee(
     @common.Param() params: EmployeeWhereUniqueInput
   ): Promise<Employee | null> {
@@ -157,8 +210,14 @@ export class EmployeeControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/assignments")
   @ApiNestedQuery(AssignmentFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "any",
+  })
   async findAssignments(
     @common.Req() request: Request,
     @common.Param() params: EmployeeWhereUniqueInput
@@ -196,6 +255,11 @@ export class EmployeeControllerBase {
   }
 
   @common.Post("/:id/assignments")
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "update",
+    possession: "any",
+  })
   async connectAssignments(
     @common.Param() params: EmployeeWhereUniqueInput,
     @common.Body() body: AssignmentWhereUniqueInput[]
@@ -213,6 +277,11 @@ export class EmployeeControllerBase {
   }
 
   @common.Patch("/:id/assignments")
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "update",
+    possession: "any",
+  })
   async updateAssignments(
     @common.Param() params: EmployeeWhereUniqueInput,
     @common.Body() body: AssignmentWhereUniqueInput[]
@@ -230,6 +299,11 @@ export class EmployeeControllerBase {
   }
 
   @common.Delete("/:id/assignments")
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "update",
+    possession: "any",
+  })
   async disconnectAssignments(
     @common.Param() params: EmployeeWhereUniqueInput,
     @common.Body() body: AssignmentWhereUniqueInput[]

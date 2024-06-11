@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AssignmentService } from "../assignment.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AssignmentCreateInput } from "./AssignmentCreateInput";
 import { Assignment } from "./Assignment";
 import { AssignmentFindManyArgs } from "./AssignmentFindManyArgs";
 import { AssignmentWhereUniqueInput } from "./AssignmentWhereUniqueInput";
 import { AssignmentUpdateInput } from "./AssignmentUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AssignmentControllerBase {
-  constructor(protected readonly service: AssignmentService) {}
+  constructor(
+    protected readonly service: AssignmentService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Assignment })
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAssignment(
     @common.Body() data: AssignmentCreateInput
   ): Promise<Assignment> {
@@ -69,9 +87,18 @@ export class AssignmentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Assignment] })
   @ApiNestedQuery(AssignmentFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignments(@common.Req() request: Request): Promise<Assignment[]> {
     const args = plainToClass(AssignmentFindManyArgs, request.query);
     return this.service.assignments({
@@ -99,9 +126,18 @@ export class AssignmentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Assignment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignment(
     @common.Param() params: AssignmentWhereUniqueInput
   ): Promise<Assignment | null> {
@@ -136,9 +172,18 @@ export class AssignmentControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Assignment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAssignment(
     @common.Param() params: AssignmentWhereUniqueInput,
     @common.Body() data: AssignmentUpdateInput
@@ -195,6 +240,14 @@ export class AssignmentControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Assignment })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAssignment(
     @common.Param() params: AssignmentWhereUniqueInput
   ): Promise<Assignment | null> {
