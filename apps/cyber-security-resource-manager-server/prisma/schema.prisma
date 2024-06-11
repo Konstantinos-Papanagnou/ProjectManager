@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Employee {
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+  email       String?
+  firstName   String?
+  id          String       @id @default(cuid())
+  idNumber    String?
+  image       Json?
+  lastName    String?
+  updatedAt   DateTime     @updatedAt
+}
+
+model Project {
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+  description String?
+  endDate     DateTime?
+  id          String       @id @default(cuid())
+  name        String?
+  startDate   DateTime?
+  updatedAt   DateTime     @updatedAt
+}
+
+model Assignment {
+  createdAt  DateTime  @default(now())
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employeeId String?
+  id         String    @id @default(cuid())
+  project    Project?  @relation(fields: [projectId], references: [id])
+  projectId  String?
+  role       String?
+  updatedAt  DateTime  @updatedAt
+}
+
+model File {
+  createdAt  DateTime @default(now())
+  filename   String?
+  id         String   @id @default(cuid())
+  path       String?
+  updatedAt  DateTime @updatedAt
+  uploadedBy String?
+}
