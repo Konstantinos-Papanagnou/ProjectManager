@@ -21,6 +21,10 @@ import { FileList } from "./file/FileList";
 import { FileCreate } from "./file/FileCreate";
 import { FileEdit } from "./file/FileEdit";
 import { FileShow } from "./file/FileShow";
+import { UserList } from "./user/UserList";
+import { UserCreate } from "./user/UserCreate";
+import { UserEdit } from "./user/UserEdit";
+import { UserShow } from "./user/UserShow";
 import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
 const App = (): React.ReactElement => {
@@ -74,6 +78,13 @@ const App = (): React.ReactElement => {
           edit={FileEdit}
           create={FileCreate}
           show={FileShow}
+        />
+        <Resource
+          name="User"
+          list={UserList}
+          edit={UserEdit}
+          create={UserCreate}
+          show={UserShow}
         />
       </Admin>
     </div>

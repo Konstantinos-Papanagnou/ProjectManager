@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Assignment } from "./Assignment";
 import { AssignmentCountArgs } from "./AssignmentCountArgs";
 import { AssignmentFindManyArgs } from "./AssignmentFindManyArgs";
@@ -23,10 +29,20 @@ import { DeleteAssignmentArgs } from "./DeleteAssignmentArgs";
 import { Employee } from "../../employee/base/Employee";
 import { Project } from "../../project/base/Project";
 import { AssignmentService } from "../assignment.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Assignment)
 export class AssignmentResolverBase {
-  constructor(protected readonly service: AssignmentService) {}
+  constructor(
+    protected readonly service: AssignmentService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "any",
+  })
   async _assignmentsMeta(
     @graphql.Args() args: AssignmentCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,14 +52,26 @@ export class AssignmentResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Assignment])
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "any",
+  })
   async assignments(
     @graphql.Args() args: AssignmentFindManyArgs
   ): Promise<Assignment[]> {
     return this.service.assignments(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Assignment, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "read",
+    possession: "own",
+  })
   async assignment(
     @graphql.Args() args: AssignmentFindUniqueArgs
   ): Promise<Assignment | null> {
@@ -54,7 +82,13 @@ export class AssignmentResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Assignment)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "create",
+    possession: "any",
+  })
   async createAssignment(
     @graphql.Args() args: CreateAssignmentArgs
   ): Promise<Assignment> {
@@ -78,7 +112,13 @@ export class AssignmentResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Assignment)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "update",
+    possession: "any",
+  })
   async updateAssignment(
     @graphql.Args() args: UpdateAssignmentArgs
   ): Promise<Assignment | null> {
@@ -112,6 +152,11 @@ export class AssignmentResolverBase {
   }
 
   @graphql.Mutation(() => Assignment)
+  @nestAccessControl.UseRoles({
+    resource: "Assignment",
+    action: "delete",
+    possession: "any",
+  })
   async deleteAssignment(
     @graphql.Args() args: DeleteAssignmentArgs
   ): Promise<Assignment | null> {
@@ -127,9 +172,15 @@ export class AssignmentResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => Employee, {
     nullable: true,
     name: "employee",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Employee",
+    action: "read",
+    possession: "any",
   })
   async getEmployee(
     @graphql.Parent() parent: Assignment
@@ -142,9 +193,15 @@ export class AssignmentResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => Project, {
     nullable: true,
     name: "project",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Project",
+    action: "read",
+    possession: "any",
   })
   async getProject(
     @graphql.Parent() parent: Assignment

@@ -3,6 +3,7 @@ import { EmployeeModule } from "./employee/employee.module";
 import { ProjectModule } from "./project/project.module";
 import { AssignmentModule } from "./assignment/assignment.module";
 import { FileModule } from "./file/file.module";
+import { UserModule } from "./user/user.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SecretsManagerModule } from "./providers/secrets/secretsManager.module";
@@ -12,13 +13,19 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 
+import { ACLModule } from "./auth/acl.module";
+import { AuthModule } from "./auth/auth.module";
+
 @Module({
   controllers: [],
   imports: [
+    ACLModule,
+    AuthModule,
     EmployeeModule,
     ProjectModule,
     AssignmentModule,
     FileModule,
+    UserModule,
     HealthModule,
     PrismaModule,
     SecretsManagerModule,
