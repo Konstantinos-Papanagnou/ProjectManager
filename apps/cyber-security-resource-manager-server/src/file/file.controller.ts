@@ -1,12 +1,17 @@
-import * as common from "@nestjs/common";
-import * as swagger from "@nestjs/swagger";
+import { Controller, UseGuards } from "@nestjs/common";
+import { RolesBuilder } from "nest-access-control";
 import { FileService } from "./file.service";
 import { FileControllerBase } from "./base/file.controller.base";
+import { GqlACGuard } from "../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../auth/gqlDefaultAuth.guard";
 
-@swagger.ApiTags("files")
-@common.Controller("files")
+@Controller("files")
+@UseGuards(GqlDefaultAuthGuard, GqlACGuard)
 export class FileController extends FileControllerBase {
-  constructor(protected readonly service: FileService) {
-    super(service);
+  constructor(
+    protected readonly service: FileService,
+    protected readonly rolesBuilder: RolesBuilder
+  ) {
+    super(service, rolesBuilder);
   }
 }
