@@ -1,4 +1,5 @@
-import { Resolver, UseGuards } from "@nestjs/common";
+import { Resolver } from "@nestjs/graphql";
+import { UseGuards } from "@nestjs/common";
 import { RolesBuilder } from "nest-access-control";
 import { FileService } from "./file.service";
 import { FileResolverBase } from "./base/file.resolver.base";
